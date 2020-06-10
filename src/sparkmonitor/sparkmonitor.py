@@ -5,9 +5,9 @@ Created on Jun 1, 2020
 '''
 
 import requests
-from params import SparkParams
-from helpers import Helpers
-from sparkinfo import SparkInfo
+from . import SparkParams
+from . import Helpers
+from . import SparkInfo
 
 
 class SparkMonitor(object):
