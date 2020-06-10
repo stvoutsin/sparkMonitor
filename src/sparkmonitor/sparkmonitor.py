@@ -5,9 +5,9 @@ Created on Jun 1, 2020
 '''
 
 import requests
-from . import SparkParams
-from . import Helpers
-from . import SparkInfo
+from params import SparkParams
+from helpers import Helpers
+from sparkinfo import SparkInfo
 
 
 class SparkMonitor(object):
@@ -48,7 +48,7 @@ class SparkMonitor(object):
         '''
         self.host = host
         self.port = port
-        self.appid = Helpers.sc2appid(appid) if sparkcontext else appid
+        self.appid = Helpers.sc2appid(sparkcontext) if sparkcontext is not None else appid
         self.baseurl = self.generate_baseurl(self.host, self.port, self.appid)
 
         
@@ -123,7 +123,7 @@ class SparkMonitor(object):
     
     
 def main():
-    sm = SparkMonitor("localhost", "8088", "application_1588261403747_0012")
+    sm = SparkMonitor("localhost", "8088", "application_1588261403747_0013")
     #sm = SparkMonitor("localhost", "8088", sparkcontext=sc)
     print(sm.get_job_info())
     print(sm.get_executor_info())
