@@ -1,0 +1,3 @@
+# sparkMonitor
+
+This package is a wrapper around the Spark REST API and allows users to access information and Spark applications

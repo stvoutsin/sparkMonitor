@@ -5,21 +5,10 @@ Created on Jun 1, 2020
 '''
 
 import requests
+from . import SparkParams
+from . import Helpers
+from . import SparkInfo
 
-class SparkEndpoints(object):
-    
-    
-    JOBS_SUBDIR = "jobs"
-    STORAGE_SUBDIR = "storage/rdd/"
-    STAGES_SUBDIR = "stages"
-    EXECUTORS_SUBDIR = "executors"
-
-    
-    def __init__(self):
-        pass
-    
-    
-    
 
 class SparkMonitor(object):
     '''
@@ -40,7 +29,7 @@ class SparkMonitor(object):
                     return method(self, host, port, appid)
                 else:
                     return None
-            return wrapper                # ...
+            return wrapper
 
 
     def __init__(self, host=None, port=None, appid=None, sparkcontext=None):
@@ -48,14 +37,19 @@ class SparkMonitor(object):
         Constructor
         
         :param host:
+        :type host: str
         :param port:
+        :type port: str
         :param appid:
+        :type appid: str
+        :param sparkcontext:
+        :type sparkcontext: str
+
         '''
         self.host = host
         self.port = port
-        self.appid = self.sc_to_appid(appid) if sparkcontext else appid
+        self.appid = Helpers.sc2appid(appid) if sparkcontext else appid
         self.baseurl = self.generate_baseurl(self.host, self.port, self.appid)
-        print(self.baseurl)
 
         
     @property
@@ -82,48 +76,61 @@ class SparkMonitor(object):
     def appid(self, appid):
         self.__appid = appid     
     
-    
     @Decorators.sanitize
     def generate_baseurl(self, host, port, appid):
         return "http://{0}:{1}/proxy/{2}/api/v1/applications/{2}/".format(host, port, appid)
-    
+  
         
-    def sc_to_appid(self, spark_context):
-        return spark_context._jsc.sc().applicationId()
-    
-    
-    def get_json(self, url):
-        jsondata = requests.get(url).json()
-        return jsondata
-    
-    
     def get_storage_info(self):
-        url = self.baseurl + SparkEndpoints.STORAGE_SUBDIR
-        [r.json() for r  in [
-           requests.get("{0}{1}".format(url, rdd.get("id"))) for
-           rdd  in requests.get(url).json()
-        ] if r.status_code == 200]    
-
-
+        """
+        Get the Spark Storage info
+        """
+        url = self.baseurl + SparkParams.STORAGE_SUBDIR
+        return SparkInfo(Helpers.get_json(url)) 
+                                     
     def get_job_info(self):
-        url = self.baseurl + SparkEndpoints.JOBS_SUBDIR
-        return self.get_json(url)
+        """
+        Get the Spark Job info
+        """
+        url = self.baseurl + SparkParams.JOBS_SUBDIR
+        return SparkInfo(Helpers.get_json(url))
 
 
     def get_stage_info(self):
-        url = self.baseurl + SparkEndpoints.STAGES_SUBDIR
-        return self.get_json(url)
+        """
+        Get the Spark Stage info
+        """
+        url = self.baseurl + SparkParams.STAGES_SUBDIR
+        return SparkInfo(Helpers.get_json(url))
 
 
     def get_executor_info(self):
-        url = self.baseurl + SparkEndpoints.EXECUTORS_SUBDIR
-        return self.get_json(url)
+        """
+        Get the Spark Executor info
+        """
+        url = self.baseurl + SparkParams.EXECUTORS_SUBDIR
+        return SparkInfo(Helpers.get_json(url))
 
+    
+    def get_job_logs(self):
+        """
+        Get the Spark Storage logs
+        """
+        url = self.baseurl + SparkParams.LOGS_SUBDIR
+        return requests.get(url).text
+    
+    
+    
     
 def main():
     sm = SparkMonitor("localhost", "8088", "application_1588261403747_0012")
-    print(sm.get_job_info())
     #sm = SparkMonitor("localhost", "8088", sparkcontext=sc)
+    print(sm.get_job_info())
+    print(sm.get_executor_info())
+    print(sm.get_storage_info())
+    print(sm.get_stage_info())
+    
+    #print(sm.get_job_logs())
 
 if __name__ == "__main__":
     main()
