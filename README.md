@@ -1,4 +1,4 @@
-# sparkMonitor
+# Spark Monitor
 Spark Monitor for getting information and metadata from the Spark UI REST API
 
 ## Example Usage:
